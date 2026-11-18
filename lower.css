@@ -189,6 +189,15 @@
     appearance: textfield;
 }
 
+.teacher-class-view .result-cell {
+    min-width: 100px;
+    width: 100px;
+    white-space: nowrap;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+
 @media screen and (max-width: 640px) {
     .teacher-class-view .th-vertical {
         min-width: 42px;
@@ -206,6 +215,13 @@
 
     .teacher-class-view td {
         min-width: 42px;
+    }
+
+    .teacher-class-view .result-cell {
+        min-width: 84px;
+        width: 84px;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
     }
 }
 

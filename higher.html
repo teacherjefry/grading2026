@@ -1417,7 +1417,10 @@ let presenceTimer = null;
                 ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>`
                 : (photo ? `<img src="${photo}" alt="" class="w-20 h-20 rounded-full object-cover object-[50%_25%] border-4 border-white shadow-lg">` : (state.role === 'student' ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>` : `<div class="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg">${accountInitial()}</div>`));
             const historyYearOptions = state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
-            const historyMonthOptions = MONTHS.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('');
+            const historyMonths = [...MONTHS];
+            historyMonths.splice(5, 0, 'Semester 1');
+            historyMonths.push('Semester 2', 'All Year');
+            const historyMonthOptions = historyMonths.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('');
             return `<div class="fade-in max-w-5xl mx-auto flex-grow flex flex-col">
                 <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-amber-500 p-6 md:p-8 text-white shadow-lg flex items-center gap-5">${avatar}<div><p class="text-amber-100 text-sm font-semibold">Student Dashboard</p><h2 class="text-3xl font-black mt-1">Welcome, ${studentDisplayName}!</h2><p class="text-white/80 mt-1">${student?.nickname ? `${student.nickname} · ` : ''}${state.currentMonth} · ${state.currentYear}</p></div></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
@@ -1478,7 +1481,8 @@ let presenceTimer = null;
             const passRate = outcomeStats.passPercent !== null ? outcomeStats.passPercent.toFixed(1) + '%' : 'N/A';
             const failRate = outcomeStats.failPercent !== null ? outcomeStats.failPercent.toFixed(1) + '%' : 'N/A';
             studentPerformances.sort((a,b) => b.avg - a.avg);
-            const topStudents = studentPerformances.slice(0, 3);
+            const rankedScores = studentPerformances.map(s => s.avg);
+            const topStudents = studentPerformances.map(s => ({ ...s, rank: rankedScores.indexOf(s.avg) + 1 })).filter(s => s.rank <= 3);
 
             return `
                 <div class="fade-in max-w-5xl mx-auto flex-grow flex flex-col">
@@ -1488,7 +1492,7 @@ let presenceTimer = null;
                         <p class="text-white/80 mt-1">${state.className} · ${MONTH_DISPLAY_MAP[state.currentMonth]} · ${state.currentYear}</p>
                         <div class="mt-5 flex flex-col sm:flex-row gap-3 sm:items-center">
                             <label class="text-sm font-semibold text-white">School Year (ສົກຮຽນ) <select id="teacher-dashboard-year" class="ml-1 px-3 py-2 rounded-lg border border-white/30 bg-white text-slate-800 font-medium">${state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('')}</select></label>
-                            <label class="text-sm font-semibold text-white">Month <select id="teacher-dashboard-month" class="ml-1 px-3 py-2 rounded-lg border border-white/30 bg-white text-slate-800 font-medium">${MONTHS.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('')}</select></label>
+                            <label class="text-sm font-semibold text-white">Month <select id="teacher-dashboard-month" class="ml-1 px-3 py-2 rounded-lg border border-white/30 bg-white text-slate-800 font-medium">${(() => { const dashboardMonths = [...MONTHS]; dashboardMonths.splice(5, 0, 'Semester 1'); dashboardMonths.push('Semester 2', 'All Year'); return dashboardMonths.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join(''); })()}</select></label>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -1520,13 +1524,13 @@ let presenceTimer = null;
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                             <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i> Top Performers (ນັກຮຽນເກ່ງ)</h3>
-                            ${topStudents.length > 0 ? `<div class="space-y-4">${topStudents.map((s, idx) => `
-                                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg min-w-0">
-                                    <div class="w-9 h-9 shrink-0 rounded-full bg-blue-100 text-blue-700 font-black flex items-center justify-center text-xs">${idx===0?'🥇 1st':idx===1?'🥈 2nd':'🥉 3rd'}</div>
-                                    <div class="min-w-0 flex-1 whitespace-nowrap overflow-hidden text-ellipsis text-sm font-semibold text-slate-700">${s.name}${s.nickname ? ` · ${s.nickname}` : ''} <span class="font-black text-slate-900">· Avg. ${s.avg.toFixed(1)}</span></div>
-                                    <i data-lucide="award" class="w-5 h-5 shrink-0 ${idx===0?'text-amber-500':idx===1?'text-slate-400':'text-orange-700'}"></i>
+                            ${topStudents.length > 0 ? `<div class="space-y-4">${topStudents.map((s) => { const rankStyle = s.rank === 1 ? 'bg-amber-100 text-amber-900 border-amber-200' : s.rank === 2 ? 'bg-slate-100 text-slate-800 border-slate-200' : 'bg-orange-100 text-orange-900 border-orange-200'; const medal = s.rank === 1 ? '🥇 1st' : s.rank === 2 ? '🥈 2nd' : '🥉 3rd'; const awardColor = s.rank === 1 ? 'text-amber-600' : s.rank === 2 ? 'text-slate-600' : 'text-orange-700'; return `
+                                <div class="flex items-center gap-3 p-3 rounded-lg min-w-0 border ${rankStyle}">
+                                    <div class="w-9 h-9 shrink-0 rounded-full bg-white/80 font-black flex items-center justify-center text-xs">${medal}</div>
+                                    <div class="min-w-0 flex-1 whitespace-nowrap overflow-hidden text-ellipsis text-sm font-semibold">${s.name}${s.nickname ? ` · ${s.nickname}` : ''} <span class="font-black">· Avg. ${s.avg.toFixed(2)}</span></div>
+                                    <i data-lucide="award" class="w-5 h-5 shrink-0 ${awardColor}"></i>
                                 </div>
-                            `).join('')}</div>` : `<p class="text-slate-400 text-center py-4">No grades recorded yet.</p>`}
+                            `; }).join('')}</div>` : `<p class="text-slate-400 text-center py-4">No grades recorded yet.</p>`}
                         </div>
                         <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-sm p-6 text-white">
                             <h3 class="text-lg font-bold mb-2">Quick Actions</h3>
@@ -1925,7 +1929,7 @@ let presenceTimer = null;
                         <td id="gt-${student.id}" class="px-1 py-0.5 text-center text-xs font-bold bg-yellow-50 text-yellow-900 border border-slate-300 min-w-[80px]">${student.grandTotal !== null ? (isCalculatedView ? parseFloat(student.grandTotal).toFixed(1) : student.grandTotal) : '-'}</td>
                         <td id="ga-${student.id}" class="px-1 py-0.5 text-center text-xs font-bold bg-yellow-200 text-yellow-900 border border-slate-300 min-w-[80px]">${student.averagePoints !== null ? student.averagePoints : '-'}</td>
                         <td class="px-1 py-0.5 text-center text-xs font-bold text-slate-800 border border-slate-300">${rank}</td>
-                        <td id="res-${student.id}" class="px-1 py-0.5 text-center text-sm font-bold text-black border border-slate-300 min-w-[100px]">${result}</td>
+                        <td id="res-${student.id}" class="result-cell px-2 py-1 text-center text-sm font-bold text-black border border-slate-300">${result}</td>
                     </tr>
                 `;
             }).join('');
