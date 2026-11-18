@@ -353,8 +353,8 @@ let presenceTimer = null;
         function getStudentAvatarMarkup(sizeClass='w-full h-full') {
             const student = state.selectedStudent || state.students.find(x => String(x.id || '') === String(state.auth?.studentId || state.auth?.id || ''));
             const studentName = String(student?.name || state.auth?.displayName || activeAccount?.displayName || '').trim();
-            const isGirl = /^ນາງ(?:\s|$)/.test(studentName);
-            const isBoy = /^ທ້າວ(?:\s|$)/.test(studentName);
+            const isGirl = /^ນ(?:\.|າງ)(?:\s|$)/.test(studentName);
+            const isBoy = /^ທ(?:\.|້າວ)(?:\s|$)/.test(studentName);
             if (!isGirl && !isBoy) return `<span>${accountInitial()}</span>`;
             const hair = isGirl ? '#7c3aed' : '#1d4ed8';
             const shirt = isGirl ? '#ec4899' : '#2563eb';
@@ -1341,6 +1341,11 @@ let presenceTimer = null;
                     const studentMonth = document.getElementById('student-history-month');
                     if (studentYear) studentYear.addEventListener('change', async (e) => { state.currentYear = e.target.value; state.studentHistory = {}; await loadClassData(); render(); });
                     if (studentMonth) studentMonth.addEventListener('change', async (e) => { state.currentMonth = e.target.value; state.studentHistory = {}; await loadClassData(); render(); });
+                } else {
+                    const teacherYear = document.getElementById('teacher-dashboard-year');
+                    const teacherMonth = document.getElementById('teacher-dashboard-month');
+                    if (teacherYear) teacherYear.addEventListener('change', async (e) => { state.currentYear = e.target.value; await db.put('settings', { key: accountSettingKey('lastYear'), value: state.currentYear }); await loadClassData(); render(); });
+                    if (teacherMonth) teacherMonth.addEventListener('change', async (e) => { state.currentMonth = e.target.value; await db.put('settings', { key: accountSettingKey('lastMonth'), value: state.currentMonth }); await loadClassData(); render(); });
                 }
             } else if (state.activeTab === 'class') {
                 if (state.view === 'student') {
@@ -1387,16 +1392,21 @@ let presenceTimer = null;
             const rank = rankScore > 0 ? `${rankedScores.indexOf(rankScore) + 1}/${rankStudents.length}` : `-/${rankStudents.length}`;
             const studentResultScores = student ? (rankGrades[student.id] || {}) : {}; const studentRemarks = studentResultScores && Object.keys(studentResultScores).length ? calculateResultFromGrades(studentResultScores) : '—'; const remarks = studentRemarks;
             const photo = getAccountPhoto();
-            const avatar = photo ? `<img src="${photo}" alt="" class="w-20 h-20 rounded-full object-cover object-[50%_25%] border-4 border-white shadow-lg">` : (state.role === 'student' ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>` : `<div class="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg">${accountInitial()}</div>`);
+            const studentNameForAvatar = String(student?.name || state.auth?.displayName || activeAccount?.displayName || '').trim();
+            const isGirlStudent = /^ນ(?:\.|າງ)(?:\s|$)/.test(studentNameForAvatar);
+            const isBoyStudent = /^ທ(?:\.|້າວ)(?:\s|$)/.test(studentNameForAvatar);
+            const avatar = state.role === 'student' && (isGirlStudent || isBoyStudent)
+                ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>`
+                : (photo ? `<img src="${photo}" alt="" class="w-20 h-20 rounded-full object-cover object-[50%_25%] border-4 border-white shadow-lg">` : (state.role === 'student' ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>` : `<div class="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg">${accountInitial()}</div>`));
             const historyYearOptions = state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
             const historyMonthOptions = MONTHS.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('');
             return `<div class="fade-in max-w-5xl mx-auto flex-grow flex flex-col">
                 <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-amber-500 p-6 md:p-8 text-white shadow-lg flex items-center gap-5">${avatar}<div><p class="text-amber-100 text-sm font-semibold">Student Dashboard</p><h2 class="text-3xl font-black mt-1">Welcome, ${studentDisplayName}!</h2><p class="text-white/80 mt-1">${state.currentMonth} · ${state.currentYear}</p></div></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-blue-600 to-cyan-500"><p class="text-sm font-semibold text-white/80">Classroom</p><p class="text-3xl font-black mt-2">${state.className || '-'}</p></div>
-                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-violet-600 to-fuchsia-500"><p class="text-sm font-semibold text-white/80">Current Score</p><p class="text-3xl font-black mt-2">${currentScore !== null ? currentScore.toFixed(2) : '—'}</p></div>
-                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-amber-500 to-orange-500"><p class="text-sm font-semibold text-white/80">Rank</p><p class="text-3xl font-black mt-2">${rank}</p></div>
-                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-emerald-600 to-teal-500"><p class="text-sm font-semibold text-white/80">Remarks</p><p class="text-2xl font-black mt-2">${remarks}</p></div>
+                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-blue-600 to-cyan-500"><p class="text-sm font-semibold text-white/80">Classroom</p><p class="text-3xl font-black mt-2 text-center">${state.className || '-'}</p></div>
+                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-violet-600 to-fuchsia-500"><p class="text-sm font-semibold text-white/80">Current Score</p><p class="text-3xl font-black mt-2 text-center">${currentScore !== null ? currentScore.toFixed(2) : '—'}</p></div>
+                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-amber-500 to-orange-500"><p class="text-sm font-semibold text-white/80">Rank</p><p class="text-3xl font-black mt-2 text-center">${rank}</p></div>
+                    <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-emerald-600 to-teal-500"><p class="text-sm font-semibold text-white/80">Remarks</p><p class="text-2xl font-black mt-2 text-center">${remarks}</p></div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -1458,30 +1468,34 @@ let presenceTimer = null;
                         <p class="text-amber-100 text-sm font-semibold">Teacher Dashboard</p>
                         <h2 class="text-3xl font-black mt-1">Welcome, ${getAccountDisplayName()}!</h2>
                         <p class="text-white/80 mt-1">${state.className} · ${MONTH_DISPLAY_MAP[state.currentMonth]} · ${state.currentYear}</p>
+                        <div class="mt-5 flex flex-col sm:flex-row gap-3 sm:items-center">
+                            <label class="text-sm font-semibold text-white">School Year (ສົກຮຽນ) <select id="teacher-dashboard-year" class="ml-1 px-3 py-2 rounded-lg border border-white/30 bg-white text-slate-800 font-medium">${state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('')}</select></label>
+                            <label class="text-sm font-semibold text-white">Month <select id="teacher-dashboard-month" class="ml-1 px-3 py-2 rounded-lg border border-white/30 bg-white text-slate-800 font-medium">${MONTHS.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('')}</select></label>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-4">
-                                <div class="p-3 bg-blue-100 text-blue-600 rounded-lg"><i data-lucide="users" class="w-6 h-6"></i></div>
-                                <div><p class="text-sm text-slate-500 font-medium">Total Students</p><p class="text-2xl font-bold text-slate-800">${totalStudents}</p></div>
+                        <div class="bg-gradient-to-br from-blue-600 to-cyan-500 text-white p-6 rounded-xl shadow-lg border-0">
+                            <div>
+                                <div class="flex items-center gap-4"><div class="p-3 bg-white/15 text-white rounded-lg"><i data-lucide="users" class="w-6 h-6"></i></div><p class="text-sm text-white/90 font-semibold">Total Students</p></div>
+                                <p class="text-3xl font-black text-white text-center mt-4">${totalStudents}</p>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-4">
-                                <div class="p-3 bg-emerald-100 text-emerald-600 rounded-lg"><i data-lucide="badge-check" class="w-6 h-6"></i></div>
-                                <div><p class="text-sm text-slate-500 font-medium">Pass Percentage (ເປີເຊັນເສັງໄດ້)</p><p class="text-2xl font-bold text-slate-800">${passRate}</p></div>
+                        <div class="bg-gradient-to-br from-emerald-600 to-teal-500 text-white p-6 rounded-xl shadow-lg border-0">
+                            <div>
+                                <div class="flex items-center gap-4"><div class="p-3 bg-white/15 text-white rounded-lg"><i data-lucide="badge-check" class="w-6 h-6"></i></div><p class="text-sm text-white/90 font-semibold">Pass Percentage (ເປີເຊັນເສັງໄດ້)</p></div>
+                                <p class="text-3xl font-black text-white text-center mt-4">${passRate}</p>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-4">
-                                <div class="p-3 bg-red-100 text-red-600 rounded-lg"><i data-lucide="badge-x" class="w-6 h-6"></i></div>
-                                <div><p class="text-sm text-slate-500 font-medium">Fail Percentage (ເປີເຊັນເສັງຕົກ)</p><p class="text-2xl font-bold text-slate-800">${failRate}</p></div>
+                        <div class="bg-gradient-to-br from-red-600 to-rose-500 text-white p-6 rounded-xl shadow-lg border-0">
+                            <div>
+                                <div class="flex items-center gap-4"><div class="p-3 bg-white/15 text-white rounded-lg"><i data-lucide="badge-x" class="w-6 h-6"></i></div><p class="text-sm text-white/90 font-semibold">Fail Percentage (ເປີເຊັນເສັງຕົກ)</p></div>
+                                <p class="text-3xl font-black text-white text-center mt-4">${failRate}</p>
                             </div>
                         </div>
-                         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-4">
-                                <div class="p-3 bg-purple-100 text-purple-600 rounded-lg"><i data-lucide="calendar" class="w-6 h-6"></i></div>
-                                <div><p class="text-sm text-slate-500 font-medium">Current Month</p><p class="text-lg font-bold text-slate-800">${state.currentMonth}</p></div>
+                         <div class="bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white p-6 rounded-xl shadow-lg border-0">
+                            <div>
+                                <div class="flex items-center gap-4"><div class="p-3 bg-white/15 text-white rounded-lg"><i data-lucide="calendar" class="w-6 h-6"></i></div><p class="text-sm text-white/90 font-semibold">Current Month</p></div>
+                                <p class="text-xl font-black text-white text-center mt-4">${state.currentMonth}</p>
                             </div>
                         </div>
                     </div>
@@ -1490,9 +1504,9 @@ let presenceTimer = null;
                             <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i> Top Performers (ນັກຮຽນເກ່ງ)</h3>
                             ${topStudents.length > 0 ? `<div class="space-y-4">${topStudents.map((s, idx) => `
                                 <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex-1 flex flex-col items-center justify-center text-center gap-2">
                                         <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">${idx + 1}</div>
-                                        <div><p class="font-medium text-slate-700">${s.name}</p><p class="text-xs text-slate-500">${s.nickname || '-'}</p><p class="text-xs text-slate-400">Avg: ${s.avg.toFixed(1)}</p></div>
+                                        <div><p class="font-semibold text-slate-700">${s.name}</p><p class="text-sm text-slate-500">${s.nickname || '-'}</p><p class="text-sm text-slate-400">Avg: ${s.avg.toFixed(1)}</p></div>
                                     </div>
                                     <i data-lucide="award" class="w-5 h-5 ${idx===0?'text-amber-500':idx===1?'text-slate-400':'text-orange-700'}"></i>
                                 </div>
