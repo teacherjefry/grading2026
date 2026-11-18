@@ -175,6 +175,39 @@
         .print-only { display: none; }
         span.score-print { display: none; } /* Default hidden on screen */
 
+
+
+/* Targeted teacher Class View spacing and score-input spinner removal */
+.teacher-class-view input.score-input::-webkit-outer-spin-button,
+.teacher-class-view input.score-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.teacher-class-view input.score-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+@media screen and (max-width: 640px) {
+    .teacher-class-view .th-vertical {
+        min-width: 42px;
+        width: 42px;
+        height: 220px;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    .teacher-class-view .th-vertical > div {
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .teacher-class-view td {
+        min-width: 42px;
+    }
+}
+
 /* Targeted authentication/splash layer. Existing application styles remain unchanged. */
 #auth-gate { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; background: linear-gradient(135deg,#b91c1c 0%,#dc2626 52%,#facc15 100%); }
 .auth-shell { width: min(100%, 980px); display:grid; grid-template-columns: 1.05fr .95fr; overflow:hidden; border-radius:28px; background:#fff; box-shadow:0 30px 80px rgba(0,0,0,.24); }

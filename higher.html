@@ -1952,7 +1952,7 @@ let presenceTimer = null;
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex-1 flex flex-col min-h-0 print:border-0 print:shadow-none">
-                        <div class="overflow-auto custom-scroll flex-1 h-full print:overflow-visible print:h-auto">
+                        <div class="overflow-auto custom-scroll flex-1 h-full print:overflow-visible print:h-auto ${state.role === 'teacher' ? 'teacher-class-view' : ''}">
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-slate-50 border-b border-slate-200 sticky-header">
                                     <tr>
