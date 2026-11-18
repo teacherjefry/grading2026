@@ -576,11 +576,11 @@ let presenceTimer = null;
                 try {
                     const classSnap = await cloudDb.collection(APP_LEVEL).doc(APP_CONFIG.school.id).collection('classes').doc(String(state.auth.className)).get();
                     const classData = classSnap.exists ? (classSnap.data() || {}) : {};
-                    if (Array.isArray(classData.students) && classData.students.length) {
-                        const byId = new Map(roster.map(x => [String(x.id || ''), x]));
+                    const byId = new Map(roster.map(x => [String(x.id || ''), x]));
+                    if (Array.isArray(classData.students)) {
                         classData.students.forEach(x => byId.set(String(x.id || ''), {...(byId.get(String(x.id || '')) || {}), ...x}));
-                        roster = [...byId.values()].filter(x => x.id);
                     }
+                    roster = [...byId.values()].filter(x => x.id);
                 } catch (e) { console.warn('Teacher class roster cloud fallback could not be loaded.', e); }
             }
             const teacherClassKey = String(state.auth.className || '').trim().toLowerCase();
@@ -603,8 +603,13 @@ let presenceTimer = null;
             } else {
                 roster = [];
             }
-            if (!roster.length && teacherClassKey) {
-                roster = allStudents.filter(s => String(s.className || '').trim().toLowerCase() === teacherClassKey);
+            if (teacherClassKey) {
+                const byId = new Map(roster.map(x => [String(x.id || ''), x]));
+                allStudents.filter(s => String(s.className || '').trim().toLowerCase() === teacherClassKey).forEach(s => {
+                    const id = String(s.id || '');
+                    if (id) byId.set(id, {...(byId.get(id) || {}), ...s});
+                });
+                roster = [...byId.values()];
             }
             roster.forEach(ensureStudentCredentials);
             try { await db.put('settings', { key, value: roster }); } catch (e) { console.warn('Teacher roster cloud save deferred:', e); }
@@ -1399,7 +1404,10 @@ let presenceTimer = null;
             const rankGrades = state.role === 'student' && state.classRankStudents.length ? state.classRankGrades : state.grades;
             const rankedScores = rankStudents.map(item => calculateRawAverageFromGrades(rankGrades[item.id] || {})).filter(score => score > 0).sort((a,b) => b - a);
             const rankScore = student ? calculateRawAverageFromGrades(rankGrades[student.id] || {}) : 0;
-            const rank = rankScore > 0 ? `${rankedScores.indexOf(rankScore) + 1}/${rankStudents.length}` : `-/${rankStudents.length}`;
+            const rankNumber = rankScore > 0 ? rankedScores.indexOf(rankScore) + 1 : null;
+            const rankOrdinal = rankNumber === 1 ? '1st' : rankNumber === 2 ? '2nd' : rankNumber === 3 ? '3rd' : rankNumber ? `${rankNumber}th` : '-';
+            const rankMedal = rankNumber === 1 ? '🥇 ' : rankNumber === 2 ? '🥈 ' : rankNumber === 3 ? '🥉 ' : '';
+            const rank = rankNumber ? `${rankMedal}${rankOrdinal}/${rankStudents.length}` : `-/${rankStudents.length}`;
             const studentResultScores = student ? (rankGrades[student.id] || {}) : {}; const studentRemarks = studentResultScores && Object.keys(studentResultScores).length ? calculateResultFromGrades(studentResultScores) : '—'; const remarks = studentRemarks;
             const photo = getAccountPhoto();
             const studentNameForAvatar = String(student?.name || state.auth?.displayName || activeAccount?.displayName || '').trim();
@@ -1411,7 +1419,7 @@ let presenceTimer = null;
             const historyYearOptions = state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
             const historyMonthOptions = MONTHS.map(m => `<option value="${m}" ${state.currentMonth === m ? 'selected' : ''}>${MONTH_DISPLAY_MAP[m] || m}</option>`).join('');
             return `<div class="fade-in max-w-5xl mx-auto flex-grow flex flex-col">
-                <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-amber-500 p-6 md:p-8 text-white shadow-lg flex items-center gap-5">${avatar}<div><p class="text-amber-100 text-sm font-semibold">Student Dashboard</p><h2 class="text-3xl font-black mt-1">Welcome, ${studentDisplayName}!</h2><p class="text-white/80 mt-1">${state.currentMonth} · ${state.currentYear}</p></div></div>
+                <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-amber-500 p-6 md:p-8 text-white shadow-lg flex items-center gap-5">${avatar}<div><p class="text-amber-100 text-sm font-semibold">Student Dashboard</p><h2 class="text-3xl font-black mt-1">Welcome, ${studentDisplayName}!</h2><p class="text-white/80 mt-1">${student?.nickname ? `${student.nickname} · ` : ''}${state.currentMonth} · ${state.currentYear}</p></div></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                     <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-blue-600 to-cyan-500"><p class="text-sm font-semibold text-white/80">Classroom</p><p class="text-3xl font-black mt-2 text-center">${state.className || '-'}</p></div>
                     <div class="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br from-violet-600 to-fuchsia-500"><p class="text-sm font-semibold text-white/80">Current Score</p><p class="text-3xl font-black mt-2 text-center">${currentScore !== null ? currentScore.toFixed(2) : '—'}</p></div>
@@ -1513,12 +1521,10 @@ let presenceTimer = null;
                         <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                             <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i> Top Performers (ນັກຮຽນເກ່ງ)</h3>
                             ${topStudents.length > 0 ? `<div class="space-y-4">${topStudents.map((s, idx) => `
-                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                    <div class="flex-1 flex flex-col items-center justify-center text-center gap-2">
-                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">${idx + 1}</div>
-                                        <div><p class="font-semibold text-slate-700">${s.name}</p><p class="text-sm text-slate-500">${s.nickname || '-'}</p><p class="text-sm text-slate-400">Avg: ${s.avg.toFixed(1)}</p></div>
-                                    </div>
-                                    <i data-lucide="award" class="w-5 h-5 ${idx===0?'text-amber-500':idx===1?'text-slate-400':'text-orange-700'}"></i>
+                                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg min-w-0">
+                                    <div class="w-9 h-9 shrink-0 rounded-full bg-blue-100 text-blue-700 font-black flex items-center justify-center text-xs">${idx===0?'🥇 1st':idx===1?'🥈 2nd':'🥉 3rd'}</div>
+                                    <div class="min-w-0 flex-1 whitespace-nowrap overflow-hidden text-ellipsis text-sm font-semibold text-slate-700">${s.name}${s.nickname ? ` · ${s.nickname}` : ''} <span class="font-black text-slate-900">· Avg. ${s.avg.toFixed(1)}</span></div>
+                                    <i data-lucide="award" class="w-5 h-5 shrink-0 ${idx===0?'text-amber-500':idx===1?'text-slate-400':'text-orange-700'}"></i>
                                 </div>
                             `).join('')}</div>` : `<p class="text-slate-400 text-center py-4">No grades recorded yet.</p>`}
                         </div>
@@ -1722,7 +1728,10 @@ let presenceTimer = null;
             const rankGrades = state.role === 'student' && state.classRankStudents.length ? state.classRankGrades : state.grades;
             const rankedScores = rankStudents.map(item => calculateRawAverageFromGrades(rankGrades[item.id] || {})).filter(score => score > 0).sort((a,b) => b - a);
             const rankScore = calculateRawAverageFromGrades(rankGrades[s.id] || {});
-            const rank = rankScore > 0 ? `${rankedScores.indexOf(rankScore) + 1}/${rankStudents.length}` : `-/${rankStudents.length}`;
+            const rankNumber = rankScore > 0 ? rankedScores.indexOf(rankScore) + 1 : null;
+            const rankOrdinal = rankNumber === 1 ? '1st' : rankNumber === 2 ? '2nd' : rankNumber === 3 ? '3rd' : rankNumber ? `${rankNumber}th` : '-';
+            const rankMedal = rankNumber === 1 ? '🥇 ' : rankNumber === 2 ? '🥈 ' : rankNumber === 3 ? '🥉 ' : '';
+            const rank = rankNumber ? `${rankMedal}${rankOrdinal}/${rankStudents.length}` : `-/${rankStudents.length}`;
             const displaySubjects = [...ALL_SUBJECTS];
             const rows = displaySubjects.map((subject, index) => {
                 const score = scores[subject];
@@ -1997,7 +2006,7 @@ let presenceTimer = null;
                                                 <span class="inline-block transform -rotate-180 ml-1">${state.sortKey === 'rank' ? (state.sortDesc ? '▼' : '▲') : ''}</span>
                                             </div>
                                         </th>
-                                        <th class="th-vertical font-bold text-black text-xs px-1 lao-text border border-slate-300 min-w-[80px]"><div>${SUBJECT_DISPLAY_MAP['Result']}</div></th>
+                                        <th class="th-vertical font-bold text-black text-xs px-2 lao-text border border-slate-300 min-w-[60px]"><div class="py-2 leading-tight">${SUBJECT_DISPLAY_MAP['Result']}</div></th>
                                     </tr>
                                 </thead>
                                 <tbody>${hasStudents ? rows : `<tr><td colspan="100" class="p-8 text-center text-slate-400 lao-text text-sm border border-slate-300">No students yet for ${state.currentYear}. Add them in Settings!</td></tr>`}</tbody>
