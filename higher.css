@@ -247,3 +247,21 @@
   footer { background: #fff !important; border-color: var(--mcd-border) !important; }
   footer .text-slate-400 { color: #777 !important; }
 }
+
+/* Targeted mobile header protection: keep logo, title and account controls inside the viewport. */
+@media screen and (max-width: 640px) {
+  #main-header > div > div { min-height: 64px !important; height: auto !important; padding: 8px 0 !important; align-items: center !important; }
+  #main-header .max-w-7xl { padding-left: 10px !important; padding-right: 10px !important; }
+  #main-header .bg-white\/10.p-2.rounded-full { width: 42px !important; height: 42px !important; flex:none !important; }
+  #main-header #header-logo { object-fit: contain !important; }
+  #main-header #header-class-name { font-size: 15px !important; line-height: 1.15 !important; white-space: nowrap !important; max-width: 42vw !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  #main-header .flex.items-baseline { min-width: 0 !important; flex-wrap: wrap !important; row-gap: 2px !important; }
+  #main-header .text-sm.font-normal { font-size: 10px !important; white-space: nowrap !important; }
+  #main-header .text-xs.text-blue-200 { font-size: 10px !important; }
+  #account-menu-button { min-width: 0 !important; width: 44px !important; height: 44px !important; padding: 3px !important; gap: 0 !important; justify-content:center !important; }
+  #account-menu-button #account-welcome, #account-menu-button #account-role { display:none !important; }
+  #account-menu-button .w-10 { width: 36px !important; height: 36px !important; }
+  #account-menu-button > i { display:none !important; }
+  #main-header .md\:hidden { padding-top: 6px !important; padding-bottom: 6px !important; }
+  #app { padding: 12px !important; }
+}

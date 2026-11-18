@@ -558,7 +558,9 @@ let presenceTimer = null;
             auth: null,
             role: null,
             accountProfile: {},
-            overallBranding: {}
+            overallBranding: {},
+            classRankStudents: [],
+            classRankGrades: {}
         };
 
         function accountSettingKey(key) { return (state.role === 'teacher' && state.auth && state.auth.id) ? `${state.auth.id}:${key}` : key; }
@@ -915,6 +917,8 @@ let presenceTimer = null;
         }
 
         function updateHeader() {
+            const classTab = document.getElementById('tab-class');
+            if (classTab) classTab.innerHTML = `<i data-lucide="table" class="w-4 h-4"></i> ${state.role === 'student' ? 'My Grades' : 'Class View'}`;
             const hClass = document.getElementById('header-class-name');
             if(hClass) hClass.innerText = state.role === 'student' ? 'Neerada School' : state.className;
             
@@ -938,6 +942,76 @@ let presenceTimer = null;
                 logoImg.classList.add('hidden');
                 logoIcon.classList.remove('hidden');
             }
+        }
+
+        function buildGradesForStudents(students, allGrades) {
+            const result = {};
+            const relevantGrades = allGrades.filter(g => g.year === state.currentYear);
+            students.forEach(s => {
+                const sGrades = relevantGrades.filter(g => String(g.studentId) === String(s.id));
+                const agg = {};
+                if (state.currentMonth === 'Semester 1') {
+                    ALL_SUBJECTS.forEach(sub => {
+                        let sum = 0;
+                        SEM1_MONTHS.forEach(m => {
+                            const record = sGrades.find(g => g.month === m);
+                            if (record && record.scores && record.scores[sub] !== undefined) sum += record.scores[sub];
+                        });
+                        agg[sub] = sum / 5;
+                    });
+                } else if (state.currentMonth === 'Semester 2') {
+                    ALL_SUBJECTS.forEach(sub => {
+                        let sum = 0;
+                        SEM2_MONTHS.forEach(m => {
+                            const record = sGrades.find(g => g.month === m);
+                            if (record && record.scores && record.scores[sub] !== undefined) sum += record.scores[sub];
+                        });
+                        agg[sub] = sum / 4;
+                    });
+                } else if (state.currentMonth === 'All Year') {
+                    ALL_SUBJECTS.forEach(sub => {
+                        let sum1 = 0, sum2 = 0;
+                        SEM1_MONTHS.forEach(m => {
+                            const record = sGrades.find(g => g.month === m);
+                            if (record && record.scores && record.scores[sub] !== undefined) sum1 += record.scores[sub];
+                        });
+                        SEM2_MONTHS.forEach(m => {
+                            const record = sGrades.find(g => g.month === m);
+                            if (record && record.scores && record.scores[sub] !== undefined) sum2 += record.scores[sub];
+                        });
+                        agg[sub] = ((sum1 / 5) + (sum2 / 4)) / 2;
+                    });
+                } else {
+                    const record = sGrades.find(g => g.month === state.currentMonth);
+                    Object.assign(agg, record && record.scores ? record.scores : {});
+                }
+                result[s.id] = agg;
+            });
+            return result;
+        }
+
+        function calculateResultFromGrades(grades) {
+            if (!grades || Object.keys(grades).length === 0) return '—';
+            const scores = [];
+            LAO_SUB_SUBJECTS.forEach(sub => { if (grades[sub] !== undefined && grades[sub] !== '') scores.push(Number(grades[sub])); });
+            OTHER_SUBJECTS.forEach(sub => { if (grades[sub] !== undefined && grades[sub] !== '') scores.push(Number(grades[sub])); });
+            if (!scores.length) return '—';
+            const minScore = Math.min(...scores);
+            const countBelowOrEqual4 = scores.filter(s => s <= 4).length;
+            if (minScore >= 7) return 'ຮອບດ້ານ';
+            if (countBelowOrEqual4 === 0) return 'ສົມບູນ';
+            if (countBelowOrEqual4 === 1) return 'ອະນຸໂລມ';
+            return 'ຕົກ';
+        }
+
+        function calculateRawAverageFromGrades(grades) {
+            if (!grades) return 0;
+            let laoTotal = 0, laoCount = 0;
+            LAO_SUB_SUBJECTS.forEach(sub => { if (grades[sub] !== undefined) { laoTotal += Number(grades[sub]) || 0; laoCount++; } });
+            const laoAvg = laoCount === 6 ? laoTotal / 6 : 0;
+            let grandTotal = laoAvg;
+            OTHER_SUBJECTS.forEach(sub => { if (grades[sub] !== undefined) grandTotal += Number(grades[sub]) || 0; });
+            return grandTotal / 9;
         }
 
         async function loadClassData() {
@@ -969,6 +1043,16 @@ let presenceTimer = null;
                 state.availableYears = [...new Set([...state.availableYears, ...historyYears])].sort((a,b) => a.localeCompare(b));
             }
             const relevantGrades = allGrades.filter(g => g.year === state.currentYear);
+
+            if (state.role === 'student') {
+                const ownStudent = state.selectedStudent || state.students[0];
+                const className = String(ownStudent?.className || state.className || '').trim().toLowerCase();
+                state.classRankStudents = allStudents.filter(s => s.year === state.currentYear && String(s.className || '').trim().toLowerCase() === className);
+                state.classRankGrades = buildGradesForStudents(state.classRankStudents, allGrades);
+            } else {
+                state.classRankStudents = [];
+                state.classRankGrades = {};
+            }
 
             if (state.currentMonth === 'Semester 1') {
                 state.grades = {};
@@ -1054,10 +1138,12 @@ let presenceTimer = null;
         function switchTab(tabName) {
             state.activeTab = tabName;
             if (tabName === 'class') {
-                if(state.view === 'student') {
-                    state.view = 'class';
-                    state.selectedStudent = null;
+                if (state.role === 'student') {
+                    navigateToStudent(state.auth?.studentId || state.auth?.id || '');
+                    return;
                 }
+                state.view = 'class';
+                state.selectedStudent = null;
             }
             render();
         }
@@ -1231,7 +1317,6 @@ let presenceTimer = null;
 
         function render() {
             if (state.role === 'student' && state.activeTab === 'settings') state.activeTab = 'dashboard';
-            if (state.role === 'student' && state.activeTab === 'class') state.view = 'student';
             const app = document.getElementById('app');
             app.innerHTML = '';
             
@@ -1295,9 +1380,12 @@ let presenceTimer = null;
             const studentDisplayName = state.role === 'student' ? getAccountDisplayName() : (student ? student.name : (state.auth?.displayName || 'Student'));
             const studentRow = student ? calculateRowData(student) : null;
             const currentScore = studentRow && studentRow.rawAvg > 0 ? studentRow.rawAvg : null;
-            const rankedScores = state.students.map(item => calculateRowData(item).rawAvg || 0).filter(score => score > 0).sort((a,b) => b - a);
-            const rank = currentScore !== null ? `${rankedScores.indexOf(currentScore) + 1}/${state.students.length}` : `-/${state.students.length}`;
-            const remarks = currentScore === null ? '—' : (currentScore >= 7 ? 'Excellent' : (currentScore >= 5 ? 'Passed' : 'Failed'));
+            const rankStudents = state.role === 'student' && state.classRankStudents.length ? state.classRankStudents : state.students;
+            const rankGrades = state.role === 'student' && state.classRankStudents.length ? state.classRankGrades : state.grades;
+            const rankedScores = rankStudents.map(item => calculateRawAverageFromGrades(rankGrades[item.id] || {})).filter(score => score > 0).sort((a,b) => b - a);
+            const rankScore = student ? calculateRawAverageFromGrades(rankGrades[student.id] || {}) : 0;
+            const rank = rankScore > 0 ? `${rankedScores.indexOf(rankScore) + 1}/${rankStudents.length}` : `-/${rankStudents.length}`;
+            const studentResultScores = student ? (rankGrades[student.id] || {}) : {}; const studentRemarks = studentResultScores && Object.keys(studentResultScores).length ? calculateResultFromGrades(studentResultScores) : '—'; const remarks = studentRemarks;
             const photo = getAccountPhoto();
             const avatar = photo ? `<img src="${photo}" alt="" class="w-20 h-20 rounded-full object-cover object-[50%_25%] border-4 border-white shadow-lg">` : (state.role === 'student' ? `<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-sky-100">${getStudentAvatarMarkup()}</div>` : `<div class="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg">${accountInitial()}</div>`);
             const historyYearOptions = state.availableYears.map(y => `<option value="${y}" ${state.currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
@@ -1591,8 +1679,11 @@ let presenceTimer = null;
             const scores = state.studentHistory[state.currentMonth] || state.grades[s.id] || {};
             const rowData = calculateRowData(s);
             const currentScore = rowData.rawAvg > 0 ? rowData.rawAvg : null;
-            const rankedScores = state.students.map(item => calculateRowData(item).rawAvg || 0).filter(score => score > 0).sort((a,b) => b - a);
-            const rank = currentScore !== null ? `${rankedScores.indexOf(currentScore) + 1}/${rankedScores.length}` : `-/${rankedScores.length}`;
+            const rankStudents = state.role === 'student' && state.classRankStudents.length ? state.classRankStudents : state.students;
+            const rankGrades = state.role === 'student' && state.classRankStudents.length ? state.classRankGrades : state.grades;
+            const rankedScores = rankStudents.map(item => calculateRawAverageFromGrades(rankGrades[item.id] || {})).filter(score => score > 0).sort((a,b) => b - a);
+            const rankScore = calculateRawAverageFromGrades(rankGrades[s.id] || {});
+            const rank = rankScore > 0 ? `${rankedScores.indexOf(rankScore) + 1}/${rankStudents.length}` : `-/${rankStudents.length}`;
             const displaySubjects = [...ALL_SUBJECTS];
             const rows = displaySubjects.map((subject, index) => {
                 const score = scores[subject];
@@ -1654,8 +1745,8 @@ let presenceTimer = null;
         }
 
         // --- CALCULATIONS FOR CLASS VIEW ---
-        function calculateRowData(student) {
-            const grades = state.grades[student.id] || {};
+        function calculateRowData(student, gradesOverride) {
+            const grades = gradesOverride || state.grades[student.id] || {};
             let laoTotal = 0, laoCount = 0;
             LAO_SUB_SUBJECTS.forEach(sub => { if(grades[sub] !== undefined) { laoTotal += grades[sub]; laoCount++; } });
             const laoAvg = laoCount === 6 ? (laoTotal / 6) : 0;
@@ -1666,8 +1757,10 @@ let presenceTimer = null;
         }
 
         function renderClassView() {
-            const hasStudents = state.students.length > 0;
-            let processedStudents = state.students.map(s => ({ ...s, ...calculateRowData(s) }));
+            const viewStudents = state.role === 'student' && state.classRankStudents.length ? state.classRankStudents : state.students;
+            const viewGrades = state.role === 'student' && state.classRankStudents.length ? state.classRankGrades : state.grades;
+            const hasStudents = viewStudents.length > 0;
+            let processedStudents = viewStudents.map(s => ({ ...s, ...calculateRowData(s, viewGrades[s.id]) }));
             const isCalculatedView = ['Semester 1', 'Semester 2', 'All Year'].includes(state.currentMonth);
             
             // Calculate Rank logic logic
@@ -1752,7 +1845,7 @@ let presenceTimer = null;
                             const color = isLow ? 'bg-score-green text-black font-bold' : (isMedium ? 'bg-score-blue text-black' : 'text-black');
                             
                             const displayVal = val !== undefined ? (isCalculatedView ? val.toFixed(1).replace(/\.0$/, '') : val) : '';
-                            const inputHtml = isCalculatedView ? 
+                            const inputHtml = isCalculatedView || state.role === 'student' ? 
                                 `<span class="text-xs font-medium">${displayVal}</span>` :
                                 `<input type="number" step="0.5" class="score-input w-full h-full text-center bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-medium" value="${displayVal}" onchange="quickUpdateScore('${student.id}', '${sub}', this.value)">`;
                             
@@ -1772,7 +1865,7 @@ let presenceTimer = null;
                             const color = isLow ? 'bg-score-green text-black font-bold' : (isMedium ? 'bg-score-blue text-black' : 'text-black');
                             
                             const displayVal = val !== undefined ? (isCalculatedView ? val.toFixed(1).replace(/\.0$/, '') : val) : '';
-                            const inputHtml = isCalculatedView ? 
+                            const inputHtml = isCalculatedView || state.role === 'student' ? 
                                 `<span class="text-xs font-medium">${displayVal}</span>` :
                                 `<input type="number" step="0.5" class="score-input w-full h-full text-center bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-xs font-medium" value="${displayVal}" onchange="quickUpdateScore('${student.id}', '${sub}', this.value)">`;
 
@@ -1822,10 +1915,10 @@ let presenceTimer = null;
                                 <i data-lucide="calendar" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
                             </div>
                              <button onclick="openPrintModal()" class="p-2 text-slate-500 hover:text-blue-600 bg-white border border-slate-200 rounded-lg shadow-sm" title="Print"><i data-lucide="printer" class="w-4 h-4"></i></button>
-                             ${!isCalculatedView ? `<button onclick="resetMonthScores()" class="p-2 text-slate-500 hover:text-red-600 bg-white border border-slate-200 rounded-lg shadow-sm" title="Reset Month"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>` : ''}
+                             ${state.role !== 'student' && !isCalculatedView ? `<button onclick="resetMonthScores()" class="p-2 text-slate-500 hover:text-red-600 bg-white border border-slate-200 rounded-lg shadow-sm" title="Reset Month"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>` : ''}
                         </div>
                         <div class="flex items-center gap-3">
-                            ${!isCalculatedView ? `<button onclick="openModal('upload-modal')" class="flex items-center gap-2 bg-white text-slate-600 border border-slate-200 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i><span class="lao-text">Import Grades</span></button>` : ''}
+                            ${state.role !== 'student' && !isCalculatedView ? `<button onclick="openModal('upload-modal')" class="flex items-center gap-2 bg-white text-slate-600 border border-slate-200 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i><span class="lao-text">Import Grades</span></button>` : ''}
                         </div>
                     </div>
                     
