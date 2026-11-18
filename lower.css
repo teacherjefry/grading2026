@@ -1,0 +1,259 @@
+        /* Add Phetsarath OT font face */
+        @font-face {
+            font-family: 'Phetsarath OT';
+            src: local('Phetsarath OT');
+        }
+
+        body { font-family: 'Inter', 'Phetsarath OT', 'Noto Sans Lao', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .custom-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .lao-text { font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif; }
+
+        /* Custom Score Colors */
+        .bg-score-blue { background-color: #0dbbf4 !important; }
+        .bg-score-green { background-color: #0df46a !important; }
+
+        /* Vertical Headers Class */
+        .th-vertical {
+            vertical-align: bottom;
+            padding-bottom: 8px;
+            height: 180px;
+            white-space: nowrap;
+        }
+        
+        .th-vertical > div {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: left; 
+            gap: 4px;
+        }
+
+        /* Sticky Header Logic */
+        thead.sticky-header th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: #f8fafc; /* bg-slate-50 */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        /* Corner cells need higher z-index to sit above row headers and col headers */
+        thead.sticky-header th.sticky-corner {
+            z-index: 25;
+        }
+
+        /* Print Styles */
+        @media print {
+            @page { margin: 10mm; } 
+            
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            
+            body { 
+                background: white; 
+                color: black; 
+                font-size: 10pt; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                height: auto;
+            }
+
+            /* Remove shadows and overflow clipping for print */
+            .shadow-sm, .shadow-lg, .shadow-2xl { box-shadow: none !important; }
+            .overflow-hidden { overflow: visible !important; }
+            .custom-scroll { overflow: visible !important; height: auto !important; }
+            
+            /* Table Styling for Print */
+            table { 
+                border-collapse: collapse !important; 
+                width: 100%;
+                table-layout: auto;
+            }
+            
+            /* Consistent Borders - FORCE BLACK ON ALL CELLS */
+            th, td { 
+                padding: 4px !important; 
+                border: 1px solid #000 !important; 
+            }
+            
+            /* Specific fix for the sticky headers/columns borders */
+            .border-slate-300, .border-slate-200 { border-color: #000 !important; }
+
+            /* Handle Headers */
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+            
+            .th-vertical { height: 120px; } /* Slightly shorter for print */
+            
+            /* Remove Sticky positioning in print to avoid layout issues */
+            .sticky { position: static !important; }
+            thead.sticky-header th { position: static !important; box-shadow: none !important; }
+            
+            /* Adjust Name Column Width - Make it compact */
+            th:first-child, td:first-child {
+                min-width: 0 !important;
+                width: 1% !important; /* Force shrink to content */
+                white-space: nowrap !important;
+            }
+
+            /* Ensure table fits horizontally */
+            #class-table-container { 
+                max-width: 100% !important; 
+                width: 100% !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* --- PRINT COLOR CORRECTIONS --- */
+            
+            /* 1. Remove Row Highlights (Cursor/Selection) */
+            /* Force row background to transparent to hide user selection highlights */
+            tr { background-color: transparent !important; }
+            
+            /* 2. Enforce Data Colors (Match Screen) */
+            /* Force cell backgrounds to print even if row is transparent */
+            td.bg-score-green { background-color: #0df46a !important; -webkit-print-color-adjust: exact; }
+            td.bg-score-blue { background-color: #0dbbf4 !important; -webkit-print-color-adjust: exact; }
+            
+            /* Lao Avg (Light Purple) */
+            td.bg-purple-100 { background-color: #f3e8ff !important; -webkit-print-color-adjust: exact; }
+            /* Total (Light Yellow) */
+            td.bg-yellow-50 { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; }
+            /* Average (Yellow) */
+            td.bg-yellow-200 { background-color: #fef08a !important; -webkit-print-color-adjust: exact; }
+            
+            /* Other Colors */
+            td.bg-orange-100 { background-color: #ffedd5 !important; -webkit-print-color-adjust: exact; }
+            td.bg-teal-100 { background-color: #ccfbf1 !important; -webkit-print-color-adjust: exact; }
+            
+            /* Explicitly define highlight colors for print to ensure manual row highlights appear */
+            .bg-yellow-100 { background-color: #fef9c3 !important; -webkit-print-color-adjust: exact; }
+            .bg-green-100 { background-color: #dcfce7 !important; -webkit-print-color-adjust: exact; }
+            .bg-red-100 { background-color: #fee2e2 !important; -webkit-print-color-adjust: exact; }
+            .bg-blue-100 { background-color: #dbeafe !important; -webkit-print-color-adjust: exact; }
+
+            /* Force text colors */
+            .text-red-600 { color: #dc2626 !important; } 
+            .text-green-900 { color: #14532d !important; }
+            .text-blue-900 { color: #1e3a8a !important; }
+            .text-purple-900 { color: #581c87 !important; }
+            .text-yellow-900 { color: #713f12 !important; }
+            .text-black { color: #000 !important; }
+            
+            /* Hide inputs, show text */
+            input.score-input { display: none !important; }
+            span.score-print { display: inline-block !important; width: 100%; text-align: center; color: black !important; }
+            
+            /* Footer */
+            footer.print-footer {
+                display: block;
+                position: static; /* Appears at end of flow (Last Page) */
+                width: 100%;
+                text-align: center;
+                font-size: 8pt;
+                color: #000;
+                padding-top: 10px;
+                margin-top: 10px;
+                border-top: 1px solid #000;
+                background: white;
+                page-break-inside: avoid;
+            }
+            
+            /* Add print grid utility */
+            .print\:grid { display: grid !important; }
+            .print\:border-black { border-color: #000 !important; }
+            .print\:text-black { color: #000 !important; }
+        }
+        
+        .print-only { display: none; }
+        span.score-print { display: none; } /* Default hidden on screen */
+
+/* Targeted authentication/splash layer. Existing application styles remain unchanged. */
+#auth-gate { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; background: linear-gradient(135deg,#b91c1c 0%,#dc2626 52%,#facc15 100%); }
+.auth-shell { width: min(100%, 980px); display:grid; grid-template-columns: 1.05fr .95fr; overflow:hidden; border-radius:28px; background:#fff; box-shadow:0 30px 80px rgba(0,0,0,.24); }
+.auth-brand { padding:48px; color:#fff; background:linear-gradient(145deg,#b91c1c,#ef4444); display:flex; flex-direction:column; justify-content:center; }
+.auth-brand-badge { width:76px; height:76px; border-radius:22px; background:#facc15; color:#991b1b; display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:900; margin-bottom:24px; box-shadow:0 10px 25px rgba(0,0,0,.16); }
+.auth-form { padding:40px; background:#fff; }
+.auth-input { width:100%; border:1px solid #e2e8f0; border-radius:14px; padding:13px 14px; outline:none; transition:.2s; }
+.auth-input:focus { border-color:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.12); }
+.password-field { position:relative; margin-bottom:12px; }
+.password-field .auth-input { padding-right:48px; margin-bottom:0; }
+.password-toggle { position:absolute; right:10px; top:50%; transform:translateY(-50%); border:0; background:transparent; color:#64748b; cursor:pointer; width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; }
+.password-toggle:hover { background:#f1f5f9; color:#334155; }
+.auth-btn { width:100%; border:0; border-radius:14px; padding:13px 16px; background:#dc2626; color:#fff; font-weight:800; cursor:pointer; transition:.2s; }
+.auth-btn:hover { background:#b91c1c; transform:translateY(-1px); }
+.auth-role { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.auth-role button { border:1px solid #e2e8f0; border-radius:12px; padding:10px; background:#fff; cursor:pointer; font-weight:700; }
+.auth-role button.active { border-color:#dc2626; background:#fef2f2; color:#b91c1c; }
+.auth-error { min-height:20px; color:#b91c1c; font-size:13px; }
+#splash-screen { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:#dc2626; color:#fff; transition:opacity .45s ease, visibility .45s ease; }
+#splash-screen.hide { opacity:0; visibility:hidden; pointer-events:none; }
+.splash-card { text-align:center; }
+.splash-mark { width:96px; height:96px; margin:0 auto 18px; border-radius:28px; background:#facc15; color:#991b1b; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:900; box-shadow:0 18px 45px rgba(0,0,0,.18); }
+.auth-hidden { display:none !important; }
+@media (max-width: 760px) { .auth-shell { grid-template-columns:1fr; } .auth-brand { padding:30px; } .auth-form { padding:30px; } }
+
+/* McDonald's-inspired visual theme — screen only; grading/print behavior unchanged. */
+@media screen {
+  :root {
+    --mcd-red: #d90000;
+    --mcd-red-dark: #b80000;
+    --mcd-yellow: #ffc72c;
+    --mcd-yellow-soft: #fff4c7;
+    --mcd-black: #292929;
+    --mcd-gray: #f5f5f5;
+    --mcd-border: #e5e5e5;
+  }
+
+  body { background: #f7f7f7 !important; color: var(--mcd-black) !important; }
+  #main-header { background: var(--mcd-red) !important; box-shadow: 0 3px 14px rgba(0,0,0,.12) !important; }
+  #main-header .bg-white\/10 { background: rgba(255,255,255,.14) !important; }
+  #main-header .text-blue-200 { color: rgba(255,255,255,.82) !important; }
+  #main-header .border-blue-700, #main-header .border-blue-800 { border-color: rgba(255,255,255,.22) !important; }
+  #main-header nav button { border-radius: 999px !important; font-weight: 800 !important; }
+  #main-header nav button:hover { background: rgba(255,255,255,.14) !important; }
+  #main-header > div > div { min-height: 88px; }
+  #main-header .bg-white\/10.p-2.rounded-full { width: 52px !important; height: 52px !important; padding: 0 !important; }
+  #main-header #header-logo { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 50% !important; }
+  #main-header button[title="Logout"] { background: var(--mcd-yellow) !important; color: var(--mcd-black) !important; border-radius: 999px !important; font-weight: 900 !important; }
+  #main-header button[title="Logout"]:hover { background: #ffd84f !important; }
+
+  #app { max-width: 1280px !important; padding: 24px !important; }
+  #app > section, #app .bg-white { border-color: var(--mcd-border) !important; }
+  #app .rounded-xl, #app .rounded-lg { border-radius: 16px !important; }
+  #app .shadow-sm { box-shadow: 0 4px 18px rgba(0,0,0,.07) !important; }
+  #app .shadow-2xl { box-shadow: 0 20px 50px rgba(0,0,0,.16) !important; }
+  #app .bg-slate-50 { background: #fafafa !important; }
+  #app .bg-slate-100 { background: #f3f3f3 !important; }
+  #app .text-slate-800, #app .text-slate-900, #app .text-slate-700 { color: var(--mcd-black) !important; }
+  #app .text-slate-500, #app .text-slate-400 { color: #6b6b6b !important; }
+  #app .border-slate-100, #app .border-slate-200, #app .border-slate-300 { border-color: var(--mcd-border) !important; }
+
+  #app [class~="bg-blue-600"] { background: var(--mcd-red) !important; }
+  #app [class~="hover:bg-blue-700"]:hover { background: var(--mcd-red-dark) !important; }
+  #app [class~="bg-blue-50"] { background: var(--mcd-yellow-soft) !important; }
+  #app [class~="text-blue-600"], #app [class~="text-blue-700"], #app [class~="text-blue-900"] { color: var(--mcd-red) !important; }
+  #app [class~="border-blue-600"], #app [class~="hover:border-blue-500"]:hover { border-color: var(--mcd-red) !important; }
+  #app [class~="focus:border-blue-500"]:focus { border-color: var(--mcd-red) !important; }
+  #app [class~="accent-blue-600"] { accent-color: var(--mcd-red) !important; }
+
+  #app button { font-weight: 800; }
+  #app button[class*="bg-blue-600"], #app button[class*="bg-slate-700"] { border-radius: 999px !important; }
+  #app input, #app textarea, #app select { border-radius: 12px !important; }
+  #app input:focus, #app textarea:focus, #app select:focus { box-shadow: 0 0 0 3px rgba(217,0,0,.12) !important; }
+
+  #notification { background: var(--mcd-black) !important; color: #fff !important; border-left: 5px solid var(--mcd-yellow) !important; border-radius: 12px !important; }
+  #print-settings-modal > div, #manage-students-modal > div, #edit-student-modal > div, #edit-grades-modal > div { border-radius: 18px !important; }
+  #print-settings-modal .bg-slate-50, #manage-students-modal .bg-slate-50, #edit-student-modal .bg-slate-50, #edit-grades-modal .bg-slate-50 { background: #fafafa !important; }
+
+  footer { background: #fff !important; border-color: var(--mcd-border) !important; }
+  footer .text-slate-400 { color: #777 !important; }
+}

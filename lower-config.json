@@ -1,0 +1,22 @@
+{
+  "school": {
+    "id": "lower-primary",
+    "name": "Lower Primary Grading System",
+    "level": "lower",
+    "schoolYear": "2025-2026"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyD9itrbgbuZZNMXvIFS5tMxX-4_kqMBKVI",
+    "authDomain": "lower-primary.firebaseapp.com",
+    "projectId": "lower-primary",
+    "storageBucket": "lower-primary.firebasestorage.app",
+    "messagingSenderId": "84223772997",
+    "appId": "1:84223772997:web:bbb9395e1da2d0ecb1dcac"
+  },
+  "capacity": {
+    "students": 875,
+    "classrooms": 25,
+    "teachers": 25,
+    "studentsPerClass": 35
+  }
+}

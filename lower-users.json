@@ -1,0 +1,170 @@
+[
+  {
+    "id": "lower-teacher-01",
+    "role": "teacher",
+    "username": "Phonepaseuth",
+    "password": "LPhonepaseuth",
+    "displayName": "Phonepaseuth Luangphasay",
+    "className": "P1A"
+  },
+  {
+    "id": "lower-teacher-02",
+    "role": "teacher",
+    "username": "Somchai",
+    "password": "LSomchai",
+    "displayName": "Somchai Thammavong",
+    "className": "P1B"
+  },
+  {
+    "id": "lower-teacher-03",
+    "role": "teacher",
+    "username": "Jalavee",
+    "password": "LJalavee",
+    "displayName": "Jalavee Vorlachuck",
+    "className": "P1C"
+  },
+  {
+    "id": "lower-teacher-04",
+    "role": "teacher",
+    "username": "Phitsamai",
+    "password": "LPhitsamai",
+    "displayName": "Phitsamai Phommatha",
+    "className": "P1D"
+  },
+  {
+    "id": "lower-teacher-05",
+    "role": "teacher",
+    "username": "Ning",
+    "password": "LNing",
+    "displayName": "Ning Souphanthone",
+    "className": "P1E"
+  },
+  {
+    "id": "lower-teacher-06",
+    "role": "teacher",
+    "username": "Lormsouk",
+    "password": "LLormsouk",
+    "displayName": "Lormsouk Thamkingkeo",
+    "className": "P1F"
+  },
+  {
+    "id": "lower-teacher-07",
+    "role": "teacher",
+    "username": "Phatthaphone",
+    "password": "LPhatthaphone",
+    "displayName": "Phatthaphone Fongphachanh",
+    "className": "P1G"
+  },
+  {
+    "id": "lower-teacher-08",
+    "role": "teacher",
+    "username": "Tiksavanh",
+    "password": "LTiksavanh",
+    "displayName": "Tiksavanh Phanthala",
+    "className": "P2A"
+  },
+  {
+    "id": "lower-teacher-09",
+    "role": "teacher",
+    "username": "Sounita",
+    "password": "LSounita",
+    "displayName": "Sounita Somphonexay",
+    "className": "P2B"
+  },
+  {
+    "id": "lower-teacher-10",
+    "role": "teacher",
+    "username": "Khamlien",
+    "password": "LKhamlien",
+    "displayName": "Khamlien Vongkham",
+    "className": "P2C"
+  },
+  {
+    "id": "lower-teacher-11",
+    "role": "teacher",
+    "username": "Noudjaly",
+    "password": "LNoudjaly",
+    "displayName": "Noudjaly Kiphachanh",
+    "className": "P2D"
+  },
+  {
+    "id": "lower-teacher-12",
+    "role": "teacher",
+    "username": "Mienthong",
+    "password": "LMienthong",
+    "displayName": "Mienthong Saengphachan",
+    "className": "P2E"
+  },
+  {
+    "id": "lower-teacher-13",
+    "role": "teacher",
+    "username": "Sonemany",
+    "password": "LSonemany",
+    "displayName": "Sonemany Phommaly",
+    "className": "P2F"
+  },
+  {
+    "id": "lower-teacher-14",
+    "role": "teacher",
+    "username": "Seelamphay",
+    "password": "LSeelamphay",
+    "displayName": "Seelamphay Singvisane",
+    "className": "P2G"
+  },
+  {
+    "id": "lower-teacher-15",
+    "role": "teacher",
+    "username": "Somsanouk",
+    "password": "LSomsanouk",
+    "displayName": "Somsanouk Kounlavong",
+    "className": "P3A"
+  },
+  {
+    "id": "lower-teacher-16",
+    "role": "teacher",
+    "username": "On",
+    "password": "LOn",
+    "displayName": "On Leuangxay",
+    "className": "P3B"
+  },
+  {
+    "id": "lower-teacher-17",
+    "role": "teacher",
+    "username": "Khuanta",
+    "password": "LKhuanta",
+    "displayName": "Khuanta Chanthep",
+    "className": "P3C"
+  },
+  {
+    "id": "lower-teacher-18",
+    "role": "teacher",
+    "username": "Pino",
+    "password": "LPino",
+    "displayName": "Pino Luangphod",
+    "className": "P3D"
+  },
+  {
+    "id": "lower-teacher-19",
+    "role": "teacher",
+    "username": "Somphone",
+    "password": "LSomphone",
+    "displayName": "Somphone Champaduang",
+    "className": "P3E"
+  },
+  {
+    "id": "lower-teacher-20",
+    "role": "teacher",
+    "username": "Mina",
+    "password": "LMina",
+    "displayName": "Mina Sinpaseuth",
+    "className": "P3F"
+  },
+  {
+    "id": "lower-teacher-21",
+    "role": "teacher",
+    "username": "You",
+    "password": "LYou",
+    "displayName": "You Duangobma",
+    "className": "P3G"
+  }
+]

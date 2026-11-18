@@ -1,0 +1,22 @@
+{
+  "school": {
+    "id": "higher-primary",
+    "name": "Higher Primary Grading System",
+    "level": "higher",
+    "schoolYear": "2025-2026"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyAs-d2qZpkuBPG90BNfrdMpoAK0sOk7ECk",
+    "authDomain": "higher-primary.firebaseapp.com",
+    "projectId": "higher-primary",
+    "storageBucket": "higher-primary.firebasestorage.app",
+    "messagingSenderId": "8051688407",
+    "appId": "1:8051688407:web:9b45e1eeb04c2781b20192"
+  },
+  "capacity": {
+    "students": 420,
+    "classrooms": 12,
+    "teachers": 12,
+    "studentsPerClass": 35
+  }
+}

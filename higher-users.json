@@ -1,0 +1,98 @@
+[
+  {
+    "id": "higher-teacher-01",
+    "role": "teacher",
+    "username": "Khamla",
+    "password": "HKhamla",
+    "displayName": "Khamla Latsavong",
+    "className": "P4A"
+  },
+  {
+    "id": "higher-teacher-02",
+    "role": "teacher",
+    "username": "Khanthaly",
+    "password": "HKhanthaly",
+    "displayName": "Khanthaly Samoutvongsa",
+    "className": "P4B"
+  },
+  {
+    "id": "higher-teacher-03",
+    "role": "teacher",
+    "username": "Savanh",
+    "password": "HSavanh",
+    "displayName": "Savanh Phongpadid",
+    "className": "P4C"
+  },
+  {
+    "id": "higher-teacher-04",
+    "role": "teacher",
+    "username": "Bouachan",
+    "password": "HBouachan",
+    "displayName": "Bouachan Setthavong",
+    "className": "P4D"
+  },
+  {
+    "id": "higher-teacher-05",
+    "role": "teacher",
+    "username": "Somhod",
+    "password": "HSomhod",
+    "displayName": "Somhod Thongmany",
+    "className": "P4E"
+  },
+  {
+    "id": "higher-teacher-06",
+    "role": "teacher",
+    "username": "Boudde",
+    "password": "HBoudde",
+    "displayName": "Boudde Soulannon",
+    "className": "P4F"
+  },
+  {
+    "id": "higher-teacher-07",
+    "role": "teacher",
+    "username": "Sengaloun",
+    "password": "HSengaloun",
+    "displayName": "Sengaloun Latsavong",
+    "className": "P5A"
+  },
+  {
+    "id": "higher-teacher-08",
+    "role": "teacher",
+    "username": "Touy",
+    "password": "HTouy",
+    "displayName": "Touy Homepanya",
+    "className": "P5B"
+  },
+  {
+    "id": "higher-teacher-09",
+    "role": "teacher",
+    "username": "Kaikeo",
+    "password": "HKaikeo",
+    "displayName": "Kaikeo Latsavong",
+    "className": "P5C"
+  },
+  {
+    "id": "higher-teacher-10",
+    "role": "teacher",
+    "username": "Vilatda",
+    "password": "HVilatda",
+    "displayName": "Vilatda Sinpaseuth",
+    "className": "P5D"
+  },
+  {
+    "id": "higher-teacher-11",
+    "role": "teacher",
+    "username": "Teo",
+    "password": "HTeo",
+    "displayName": "Teo Komenyalai",
+    "className": "P5E"
+  },
+  {
+    "id": "higher-teacher-12",
+    "role": "teacher",
+    "username": "Souksakhone",
+    "password": "HSouksakhone",
+    "displayName": "Souksakhone Phetmanivong",
+    "className": "P5F"
+  }
+]
